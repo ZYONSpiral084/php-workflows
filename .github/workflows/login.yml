@@ -1,0 +1,18 @@
+name: CI PHP Login Reutilizável
+
+on:
+  workflow_call:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y php-cli php-mbstring
+          php -l index.php
+      - run: echo "Build e testes concluídos"
