@@ -5,45 +5,87 @@
 
 ---
 
-## 概述
+## 📌 概述
 
-本仓库包含适用于 **PHP 8.2** 项目的**可重用 GitHub Actions 工作流**，用于自动化持续集成（CI）任务，如语法验证与环境配置，并可被其他仓库调用。
-
----
-
-## 功能
-
-- 执行源码 checkout。  
-- 使用 `shivammathur/setup-php` 配置 PHP 8.2。  
-- 安装必要依赖（`php-cli`、`php-mbstring`）。  
-- 使用 `php -l index.php` 进行语法检查。  
-- 输出构建成功信息。
+本仓库提供一个面向 PHP 8.2 项目的**可重用 GitHub Actions 工作流**，用于自动化基本 CI 检查（环境设置、语法验证）。工作流通过 `workflow_call` 触发，可由其他仓库调用，并可固定到特定 tag/sha 以确保稳定性。
 
 ---
 
-## 结构
+## 🚀 功能
 
-`.github/workflows/login.yml` → 可重用工作流（本仓库）。
+- 检出仓库代码。  
+- 使用 `shivammathur/setup-php` 设置 PHP（默认 8.2，可配置）。  
+- 通过 setup-action 安装常用扩展（`mbstring`）。  
+- 对可配置的目标文件（默认 `index.php`）执行语法检查 `php -l`。  
+- 输出清晰日志并使用恰当的退出码，适合 CI gating。
 
 ---
 
-## 使用方法
+## 📂 结构
 
-在其他仓库中调用示例：
-
-```yaml
-name: Example CI
-on: [push]
-
-jobs:
-  call-workflow:
-    uses: user/example-repo/.github/workflows/login.yml@main
+```
+.github/
+  workflows/
+    login.yml         # <- 可重用工作流（本仓库）
+README.md
+README.pt-BR.md
+README.zh-CN.md
 ```
 
 ---
 
-## 备注
+## 🔗 使用方法（调用示例）
 
-- 将 `user/example-repo` 替换为实际 owner/repo，并将 `@main` 替换为目标 ref/分支。  
-- 确保调用仓库包含 `index.php` 等目标文件。  
-- 建议固定 ref（tag/commit）以保证可重复性。
+在其他仓库中添加 job 来调用此工作流，例如：
+
+```yaml
+# .github/workflows/consume-login.yml
+name: PHP Login CI (consume reusable)
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+
+jobs:
+  call-login:
+    uses: YOUR-USER/Reusable-PHP-Login-CI/.github/workflows/login.yml@main
+    with:
+      php-version: '8.2'
+      target-file: 'index.php'
+```
+
+请将 `YOUR-USER/Reusable-PHP-Login-CI` 修改为实际 owner/repo，并建议固定到 tag/sha。
+
+---
+
+## 🧩 推荐的 login.yml 内容
+
+（请参见 README.md 中的完整示例）
+
+---
+
+## ✅ 输入 / 输出
+
+- 输入：`php-version`（可选，默认 `8.2`），`target-file`（可选，默认 `index.php`）。  
+- 输出：`file-checked` — 被检查文件路径。
+
+---
+
+## 🔐 安全与最佳实践
+
+- 在调用时建议使用 tag（如 `@v1.0.0`）以保证稳定性。  
+- 不要提交秘密；使用 GitHub Secrets 传递敏感信息。  
+- 如需更严格检查，可添加 PHPStan/PSalm 与单元测试。
+
+---
+
+## 🧭 维护建议
+
+- 对此工作流发布版本并通知消费者更新引用。  
+- 将 README.md（英文）作为事实来源，翻译做为辅助文档。
+
+---
+
+## 📜 许可
+
+学术 / 教育用途。重复使用请注明作者。
